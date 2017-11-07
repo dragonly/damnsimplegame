@@ -44,18 +44,24 @@ class Player extends GameObject {
     this.commands[key] = false
   }
   nextState() {
+    let needNextFrameUpdate = false
     if (this.commands['ArrowUp'] || this.commands['w']) {
       this.center.y -= this.speed
+      needNextFrameUpdate = true
     }
     if (this.commands['ArrowRight'] || this.commands['d']) {
       this.center.x += this.speed
+      needNextFrameUpdate = true
     }
     if (this.commands['ArrowDown'] || this.commands['s']) {
       this.center.y += this.speed
+      needNextFrameUpdate = true
     }
     if (this.commands['ArrowLeft'] || this.commands['a']) {
       this.center.x -= this.speed
+      needNextFrameUpdate = true
     }
+    return needNextFrameUpdate
   }
 }
 
@@ -124,15 +130,17 @@ class Game extends GameObject {
       this.player.center.y = this.border.dimension.height - this.player.width / 2
       console.log('hit bottom')
     }
+    return false
   }
   nextState() {
-    this.player.nextState()
+    let needNextFrameUpdate = false
+    needNextFrameUpdate ||= this.player.nextState()
     this.checkCollision()
-    this.needUpdate = false
+    return needNextFrameUpdate
   }
   tick() {
     if (this.needUpdate) {
-      this.nextState()
+      this.needUpdate = this.nextState()
       this.draw()
     }
     window.requestAnimationFrame(this.tick)
