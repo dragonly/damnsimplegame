@@ -4,11 +4,10 @@ class GameObject {
   }
   draw() {
     let ctx = this.ctx
-    ctx.save()
     this.doDraw()  // implemented by sub-classes
-    ctx.restore()
   }
 }
+
 class Border extends GameObject {
   constructor(ctx, props) {
     super(ctx)
@@ -23,6 +22,7 @@ class Border extends GameObject {
     ctx.strokeRect(this.topLeft.x, this.topLeft.y, this.dimension.width, this.dimension.height)
   }
 }
+
 class Player extends GameObject {
   constructor(ctx, props) {
     super(ctx)
@@ -44,20 +44,21 @@ class Player extends GameObject {
     this.commands[key] = false
   }
   nextState() {
-    if (this.commands['ArrowUp']) {
+    if (this.commands['ArrowUp'] || this.commands['W']) {
       this.center.y -= this.speed
     }
-    if (this.commands['ArrowRight']) {
+    if (this.commands['ArrowRight'] || this.commands['D']) {
       this.center.x += this.speed
     }
-    if (this.commands['ArrowDown']) {
+    if (this.commands['ArrowDown'] || this.commands['S']) {
       this.center.y += this.speed
     }
-    if (this.commands['ArrowLeft']) {
+    if (this.commands['ArrowLeft'] || this.commands['A']) {
       this.center.x -= this.speed
     }
   }
 }
+
 class Game extends GameObject {
   constructor(ctx, dimension) {
     super(ctx)
@@ -84,13 +85,14 @@ class Game extends GameObject {
       width: 20,
       speed: 10
     })
+    
+    this.needUpdate = true
+    this.tick = this.tick.bind(this)
   }
   drawBackground() {
     let ctx = this.ctx
-    ctx.save()
     ctx.fillStyle = '#2d3142'
     ctx.fillRect(0, 0, this.dimension.width, this.dimension.height)
-    ctx.restore()
   }
   doDraw() {
     this.drawBackground()
@@ -99,9 +101,11 @@ class Game extends GameObject {
   }
   keyDown(key) {
     this.player.keyDown(key)
+    this.needUpdate = true
   }
   keyUp(key) {
     this.player.keyUp(key)
+    this.needUpdate = true
   }
   checkCollision() {
     if (this.player.center.x - this.player.width / 2 < this.border.width) {
@@ -124,25 +128,29 @@ class Game extends GameObject {
   nextState() {
     this.player.nextState()
     this.checkCollision()
+    this.needUpdate = false
   }
-  nextFrame() {
-    this.nextState()
-    this.draw()
-    window.requestAnimationFrame(() => this.nextFrame())
+  tick() {
+    if (this.needUpdate) {
+      this.nextState()
+      this.draw()
+    }
+    window.requestAnimationFrame(this.tick)
   }
   start() {
-    this.nextFrame()
+    this.tick()
   }
 }
 
-function listenOnKeys(game) {
-  window.addEventListener('keydown', (e) => {
-    game.keyDown(e.key)
+function bindKeys(game) {
+  window.addEventListener('keydown', function(event) {
+    game.keyDown(event.key)
   })
-  window.addEventListener('keyup', (e) => {
-    game.keyUp(e.key)
+  window.addEventListener('keyup', function(event) {
+    game.keyUp(event.key)
   })
 }
+
 function init() {
   let $canvas = document.getElementsByTagName('canvas')[0]
   $canvas.width = window.innerWidth
@@ -154,8 +162,8 @@ function init() {
       height: $canvas.height
     }
   )
-  listenOnKeys(game)
+  bindKeys(game)
   game.start()
 }
+
 init()
-let c = document.getElementsByTagName('canvas')[0].getContext('2d')
