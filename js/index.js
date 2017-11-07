@@ -9,8 +9,6 @@ class Background {
     ctx.fillStyle = '#2d3142'
     ctx.fillRect(0, 0, this.dimension.width, this.dimension.height)
   }
-
-  stepState() { return true }
 }
 
 
@@ -28,8 +26,6 @@ class Border {
     ctx.lineWidth = this.width
     ctx.strokeRect(this.topLeft.x, this.topLeft.y, this.dimension.width, this.dimension.height)
   }
-
-  stepState() { return true }
 }
 
 
@@ -151,12 +147,20 @@ class Game {
   }
 
   stepState() {
+    // 没有按键说明状态不会变化, 直接跳过后续逻辑, 节省cpu时间
+    // 如果游戏逻辑包含了物理模拟, 比如横版过关里面每一帧都需要根据加速度来移动player, 那么这一步就不能直接这么用了, 因为始终需要更新player
     if (this.states.downKeys.size === 0) return false
 
+
     let updated = this.player.stepState(this.states.downKeys)
-    // dummy operations just to give the idea of `|=`
+    // 如果有多个game object需要stepState, 只要一个有变化就需要重绘整个游戏(可能有优化空间), 可以类似下列调用, 用 |= 操作符简化描述
     // updated |= this.border.stepState()
     // updated |= this.background.stepState()
+
+    // 如果整个游戏状态更新完了, 发现没有变化, 那么不需要做碰撞检测, 节省cpu时间
+    // 否则需要利用碰撞检测, 来纠正stepState中错误的更新
+    // 比如player跑到了border里面, 需要利用碰撞检测来把player放回碰撞的边界
+    // 还有更加复杂的碰撞检测和纠正机制, 这里暂时不涉及, 有兴趣的同学可以参考Real-Time Rendering这本书
     if (updated) {
       this.checkCollision()
     }
@@ -168,6 +172,10 @@ class Game {
       this.draw()
     }
     this.states.needRedraw = this.stepState()
+
+    // requestAnimationFrame告诉浏览器下次重绘前执行this.boundFn.tick这个回调函数
+    // 之所以要bind(this)是因为js里的function(){}里面的this是根据运行时变化的, 谁调用他谁就是this
+    // 所以bind(this)使得this.boundFn.tick的this始终为Game实例
     window.requestAnimationFrame(this.boundFn.tick)
   }
 
@@ -177,6 +185,7 @@ class Game {
 }
 
 
+// 注册按键的监听函数, 这里以键盘为例, 同样可以监听鼠标事件如mousemove, 来实现基于鼠标的交互逻辑
 function bindKeys(game) {
   window.addEventListener('keydown', function(event) {
     game.keyDown(event.key)
