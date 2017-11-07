@@ -29,7 +29,7 @@ class Player extends GameObject {
     this.center = props.center
     this.width = props.width
     this.speed = props.speed
-    this.key = ''
+    this.commands = {}
   }
   doDraw() {
     let ctx = this.ctx
@@ -38,19 +38,22 @@ class Player extends GameObject {
     ctx.strokeRect(this.center.x - this.width / 4, this.center.y - this.width / 4, this.width / 2, this.width / 2)
   }
   keyDown(key) {
-    this.key = key
+    this.commands[key] = true
   }
   keyUp(key) {
-    this.key = ''
+    this.commands[key] = false
   }
   nextState() {
-    if (this.key === 'ArrowUp') {
+    if (this.commands['ArrowUp']) {
       this.center.y -= this.speed
-    } else if (this.key === 'ArrowRight') {
+    }
+    if (this.commands['ArrowRight']) {
       this.center.x += this.speed
-    } else if (this.key === 'ArrowDown') {
+    }
+    if (this.commands['ArrowDown']) {
       this.center.y += this.speed
-    } else if (this.key === 'ArrowLeft') {
+    }
+    if (this.commands['ArrowLeft']) {
       this.center.x -= this.speed
     }
   }
@@ -98,7 +101,7 @@ class Game extends GameObject {
     this.player.keyDown(key)
   }
   keyUp(key) {
-    this.player.keyUp()
+    this.player.keyUp(key)
   }
   checkCollision() {
     if (this.player.center.x - this.player.width / 2 < this.border.width) {
