@@ -186,6 +186,8 @@ class Game {
 
 
 // 注册按键的监听函数, 这里以键盘为例, 同样可以监听鼠标事件如mousemove, 来实现基于鼠标的交互逻辑
+// 回调函数的执行跟init()所在的"主线程"的执行可以理解为互不干扰的并行执行, 所以回调函数里面更改了game.states里面的东西
+// init()函数运行到的game.stepState()函数也能看到. 回调函数由按键等事件触发, 跟具体代码逻辑无关, 可能在任何时间点发生回调
 function bindKeys(game) {
   window.addEventListener('keydown', function(event) {
     game.keyDown(event.key)
