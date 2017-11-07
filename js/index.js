@@ -44,16 +44,16 @@ class Player extends GameObject {
     this.commands[key] = false
   }
   nextState() {
-    if (this.commands['ArrowUp'] || this.commands['W']) {
+    if (this.commands['ArrowUp'] || this.commands['w']) {
       this.center.y -= this.speed
     }
-    if (this.commands['ArrowRight'] || this.commands['D']) {
+    if (this.commands['ArrowRight'] || this.commands['d']) {
       this.center.x += this.speed
     }
-    if (this.commands['ArrowDown'] || this.commands['S']) {
+    if (this.commands['ArrowDown'] || this.commands['s']) {
       this.center.y += this.speed
     }
-    if (this.commands['ArrowLeft'] || this.commands['A']) {
+    if (this.commands['ArrowLeft'] || this.commands['a']) {
       this.center.x -= this.speed
     }
   }
