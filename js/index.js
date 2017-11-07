@@ -133,8 +133,7 @@ class Game extends GameObject {
     return false
   }
   nextState() {
-    let needNextFrameUpdate = false
-    needNextFrameUpdate ||= this.player.nextState()
+    let needNextFrameUpdate = this.player.nextState()
     this.checkCollision()
     return needNextFrameUpdate
   }
